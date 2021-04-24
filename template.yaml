@@ -1,0 +1,70 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  pydantic-demo
+
+  Aplicacion de juguete para testear el uso pydantic con pynamodb con transacciones
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  StorePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/store_post
+      Handler: handler.handler
+      Runtime: python3.8
+      Layers:
+        - !Ref RequirementsLayer
+      Events:
+        StorePostApiCall:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /stores
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StoresTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EmployeesTable
+
+  RequirementsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: RequirementsLayer
+      Description: Third party python libraries used by the lambda functions
+      ContentUri: ./requirements_layer
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: python3.8
+
+  StoresTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Stores"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  EmployeesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Employees"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+Outputs:
+  ApiURL:
+    Description: "API Gateway endpoint URL for Prod stage for MercadoPago Checkout function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
