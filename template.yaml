@@ -42,6 +42,17 @@ Resources:
     Metadata:
       BuildMethod: python3.8
 
+  BaseLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: BaseLayer
+      Description: Reusable code shared by the lambdas of the project
+      ContentUri: ./base_layer
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: makefile
+
   StoresTable:
     Type: AWS::DynamoDB::Table
     Properties:
